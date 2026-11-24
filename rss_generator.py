@@ -6,12 +6,25 @@ from email.utils import format_datetime
 from xml.etree.ElementTree import Element, SubElement, tostring
 from urllib.parse import urljoin
 import re
-import html
 import os
 
 BASE_URL = "https://www.ff14.co.kr"
-NOTICE_URL = "https://www.ff14.co.kr/news/notice"
-OUTPUT_FILE = "feed.xml"
+
+# RSS로 만들 페이지 설정
+FEEDS = [
+    {
+        "url": "https://www.ff14.co.kr/news/notice",
+        "file": "feed.xml",
+        "title": "파이널판타지14 한국 공식 공지사항",
+        "description": "FF14 공식 공지사항 RSS"
+    },
+    {
+        "url": "https://www.ff14.co.kr/news/notice?category=3",
+        "file": "patchnotes.xml",
+        "title": "파이널판타지14 한국 공식 패치노트",
+        "description": "FF14 공식 패치노트 RSS"
+    }
+]
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; FF14RSSBot/1.0)"
@@ -41,9 +54,11 @@ def extract_date(text):
 
     return None
 
-def main():
+def generate_feed(feed_config):
+    page_url = feed_config["url"]
+
     response = requests.get(
-        NOTICE_URL,
+        page_url,
         headers=HEADERS,
         timeout=30
     )
@@ -95,9 +110,9 @@ def main():
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
 
-    SubElement(channel, "title").text = "파이널판타지14 한국 공식 공지사항"
-    SubElement(channel, "link").text = NOTICE_URL
-    SubElement(channel, "description").text = "FF14 공식 공지사항 RSS"
+    SubElement(channel, "title").text = feed_config["title"]
+    SubElement(channel, "link").text = page_url
+    SubElement(channel, "description").text = feed_config["description"]
     SubElement(channel, "language").text = "ko-KR"
     SubElement(channel, "lastBuildDate").text = format_datetime(
         datetime.now(timezone.utc)
@@ -116,10 +131,18 @@ def main():
 
     os.makedirs("public", exist_ok=True)
 
-    with open(os.path.join("public", OUTPUT_FILE), "wb") as f:
+    output_path = os.path.join("public", feed_config["file"])
+
+    with open(output_path, "wb") as f:
         f.write(xml_data)
 
-    print(f"RSS 생성 완료: {len(items)}개 게시물")
+    print(
+        f"{feed_config['file']} 생성 완료: {len(items)}개 게시물"
+    )
+
+def main():
+    for feed_config in FEEDS:
+        generate_feed(feed_config)
 
 if __name__ == "__main__":
     main()
