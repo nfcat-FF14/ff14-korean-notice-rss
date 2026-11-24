@@ -16,13 +16,25 @@ FEEDS = [
         "url": "https://www.ff14.co.kr/news/notice",
         "file": "feed.xml",
         "title": "파이널판타지14 한국 공식 공지사항",
-        "description": "FF14 공식 공지사항 RSS"
+        "description": "FF14 공식 공지사항 RSS",
+        "item_path": "/news/notice/view/",
+        "use_date": True
     },
     {
         "url": "https://www.ff14.co.kr/news/notice?category=3",
         "file": "patchnotes.xml",
         "title": "파이널판타지14 한국 공식 패치노트",
-        "description": "FF14 공식 패치노트 RSS"
+        "description": "FF14 공식 패치노트 RSS",
+        "item_path": "/news/notice/view/",
+        "use_date": True
+    },
+    {
+        "url": "https://www.ff14.co.kr/news/event",
+        "file": "events.xml",
+        "title": "파이널판타지14 한국 공식 이벤트",
+        "description": "FF14 공식 이벤트 RSS",
+        "item_path": "/news/event/view/",
+        "use_date": False
     }
 ]
 
@@ -71,7 +83,7 @@ def generate_feed(feed_config):
     for a in soup.select("a[href]"):
         href = a.get("href", "")
 
-        if "/news/notice/view/" not in href:
+        if feed_config["item_path"] not in href:
             continue
 
         link = urljoin(BASE_URL, href)
@@ -82,16 +94,19 @@ def generate_feed(feed_config):
 
         seen.add(link)
 
+        published = None
+
         # 게시글 주변 텍스트에서 날짜 추출
-        parent = a
-        surrounding_text = title
+        if feed_config.get("use_date", True):
+            parent = a
+            surrounding_text = title
 
-        for _ in range(5):
-            if parent.parent:
-                parent = parent.parent
-                surrounding_text += " " + parent.get_text(" ", strip=True)
+            for _ in range(5):
+                if parent.parent:
+                    parent = parent.parent
+                    surrounding_text += " " + parent.get_text(" ", strip=True)
 
-        published = extract_date(surrounding_text)
+            published = extract_date(surrounding_text)
 
         items.append({
             "title": title,
@@ -99,11 +114,12 @@ def generate_feed(feed_config):
             "date": published
         })
 
-    # 날짜가 확인되는 게시물을 최신순으로 정렬
-    items.sort(
-        key=lambda x: x["date"] or datetime.min.replace(tzinfo=timezone.utc),
-        reverse=True
-    )
+    # 날짜가 있는 게시물은 최신순으로 정렬
+    if feed_config.get("use_date", True):
+        items.sort(
+            key=lambda x: x["date"] or datetime.min.replace(tzinfo=timezone.utc),
+            reverse=True
+        )
 
     items = items[:30]
 
