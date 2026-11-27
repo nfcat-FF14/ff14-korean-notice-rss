@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>MonitoRSS 자동 전송 테스트</title>
+    <link>https://nfcat-ff14.github.io/ff14-korean-notice-rss/</link>
+    <description>자동 전송 기능 확인용 RSS</description>
+    <language>ko</language>
+    <item>
+      <title>테스트 기준 게시물</title>
+      <link>https://example.com/test-001</link>
+      <guid isPermaLink="false">monitorss-test-001</guid>
+      <pubDate>Fri, 27 Nov 2026 12:00:00 GMT</pubDate>
+      <description>자동 전송 테스트의 기준 게시물입니다.</description>
+    </item>
+  </channel>
+</rss>
