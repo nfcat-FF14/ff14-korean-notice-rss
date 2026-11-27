@@ -7,6 +7,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 from urllib.parse import urljoin
 import re
 import os
+import shutil
 
 BASE_URL = "https://www.ff14.co.kr"
 
@@ -155,6 +156,10 @@ def generate_feed(feed_config):
     print(
         f"{feed_config['file']} 생성 완료: {len(items)}개 게시물"
     )
+
+    shutil.copyfile("test.xml", os.path.join("public", "test.xml"))
+    print("test.xml 생성 완료")
+
 
 def main():
     for feed_config in FEEDS:
